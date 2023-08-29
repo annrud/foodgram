@@ -1,0 +1,22 @@
+version: '3.8' # Версия Docker Compose
+services:
+# Служба внешнего интерфейса создается с использованием
+# файла Dockerfile, расположенного в каталоге ../frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+# Сопоставление каталога ../frontend/ на хост-компьютере
+# с каталогом /app/result_build/ в контейнере
+      - ../frontend/:/app/result_build/
+  nginx:
+# Служба nginx использует готовый образ nginx:1.19.3 из Docker Hub
+    image: nginx:1.25.1-alpine
+    ports:
+ # Сопоставление порта 80 на хост-компьютере с портом 80 в контейнере
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../frontend/build:/usr/share/nginx/html/
+      - ../docs/:/usr/share/nginx/html/api/docs/

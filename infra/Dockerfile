@@ -5,18 +5,18 @@ FROM python:3.10-alpine
 WORKDIR /code
 # Копирует файл requirements.txt из текущего каталога
 # (где находится Dockerfile) в каталог /code внутри контейнера
-COPY requirements.txt .
+COPY ../requirements.txt ./
 # Oбновление диспетчера пакетов Python pip до последней версии
 RUN python3.10 -m pip install --upgrade pip
 # Устанавка пакетов Python, указанных в файле requirements.txt
 RUN pip3 install -r ./requirements.txt
 # Копирует содержимое каталога ./backend
 # (относительно местоположения Dockerfile) в каталог /code в контейнере
-COPY ./backend .
+COPY ../backend ./
 # Команда используется для сбора статических файлов из приложения Django.
 # Этот шаг часто выполняется во время развертывания для подготовки статических ресурсов.
 RUN python3.10 manage.py collectstatic
 # Команда по умолчанию выполняется при запуске контейнера на основе этого образа.
 # Запускает веб-сервер Gunicorn для обслуживания приложения Django, WSGI проекта Django,
 # настраивает сервер на прослушивание всех доступных сетевых интерфейсов на порту 8000
-CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]

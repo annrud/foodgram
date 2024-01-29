@@ -23,4 +23,10 @@ urlpatterns = [
         TemplateView.as_view(template_name='openapi-schema.yml'),
         name='redoc-schema'
     ),
+    # URL-адреса, начинающиеся с "api/", будут передаваться
+    # для обработки в модули urls.py приложений,
+    # где они могут быть дополнительно маршрутизированы
+    path('api/', include('users.urls')),
+    path('api/', include('ingredients.urls')),
+    path('api/', include('recipes.urls')),
 ]

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 import environ
 
@@ -26,6 +27,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Список установленных приложений
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -33,8 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
-    'users.apps.UsersConfig',
+    'sorl.thumbnail',
+    'django_filters',
     'ingredients.apps.IngredientsConfig',
     'recipes.apps.RecipesConfig',
 ]
@@ -51,10 +55,16 @@ MIDDLEWARE = [
 # Путь к корневой конфигурации URL
 ROOT_URLCONF = 'backend.urls'
 
+# Путь к каталогу docs для доступа к файлам
+# "redoc.html" и "openapi_schema.yml"
+DOCS_TEMPLATES_DIR = BASE_DIR / '../docs'
+
+# Настройка параметров для шаблонов Django
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # Список каталогов, в которых Django будет искать шаблоны
+        'DIRS': [DOCS_TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -62,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'sorl.thumbnail.context_processors.thumbnail',
             ],
         },
     },
@@ -106,6 +117,30 @@ USE_I18N = False
 # Чтение даты и времени из базы данных возвращает дату и время в текущем часовом поясе вместо UTC
 USE_TZ = True
 
+# Настройки для Django REST framework
+REST_FRAMEWORK = {
+    # Поддержка фильтрации на основе Django Filters
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # Классы разрешений по умолчанию для всех представлений DRF.
+    # В данном случае все представления будут доступны с авторизацией
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+    # Настройка класса пагинации,
+    # установлено количество элементов на странице равное 6
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 6,
+    # Классы аутентификации по умолчанию для всех представлений DRF,
+    # установлена аутентификация на основе токенов
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    # Этот параметр определяет имя ключа,
+    # который будет использоваться для ошибок валидации полей.
+    'NON_FIELD_ERRORS_KEY': 'errors',
+}
+
 # URL-адрес, который будет использоваться при ссылке на статические файлы, расположенные в STATIC_ROOT
 STATIC_URL = 'static/'
 
@@ -123,3 +158,40 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Модель, используемая для представления пользователя
 AUTH_USER_MODEL = 'users.User'
+
+# Настройка библиотеки Django REST framework Simple JWT (JSON Web Tokens)
+# для создания и обработки JWT-токенов
+SIMPLE_JWT = {
+    # Этот параметр определяет срок действия (время жизни)
+    # выдаваемого доступного токена (access token).
+    # В данном случае, установлено значение timedelta(days=1),
+    # что означает, что каждый выданный access token будет
+    # действителен в течение 1 дня. После истечения этого срока,
+    # клиенту потребуется получить новый токен для доступа к защищенным ресурсам.
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    # Этот параметр определяет допустимые способы аутентификации
+    # в заголовке HTTP запроса. В данном случае,
+    # установлено значение ('Token',), что указывает
+    # на использование заголовка с типом 'Token'
+    # для передачи access token. Это означает,
+    # что клиент должен включать токен в заголовке
+    # запроса с указанием типа 'Token'.
+    'AUTH_HEADER_TYPES': ('Token',),
+}
+
+DJOSER = {
+    'SERIALIZERS': {
+        # Кастомный сериализатор, используемый для представления данных о текущем пользователе
+        'current_user': 'foodgram.apps.users.serializers.UserSerializer',
+        # Кастомный сериализатор для установки нового пароля пользователем
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
+    },
+    # Этот параметр определяет разрешения для доступа к различным конечным точкам API
+    'PERMISSIONS': {
+        # Пользователь должен быть аутентифицирован, чтобы иметь доступ к данным
+        'user': ['rest_framework.permissions.IsAuthenticated'],
+    },
+    # Пользователи не скрываются, и их можно просматривать через API
+    'HIDE_USERS': False,
+}
+

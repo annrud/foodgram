@@ -18,7 +18,7 @@ class TagSerializer(serializers.ModelSerializer):
 class AmountSerializer(serializers.ModelSerializer):
     """Сериализатор для представления ингредиентов и их количестве."""
     # идентификатор ингредиента берем из поля id модели ingredient
-    id = serializers.PrimaryKeyRelatedField(source='ingredient.id')
+    id = serializers.IntegerField(source='ingredient.id')
     # Имя ингредиента берем из поля name модели ingredient
     name = serializers.CharField(source='ingredient.name')
     # Единица измерения ингредиента
@@ -96,9 +96,9 @@ class AmountCreateSerializer(serializers.ModelSerializer):
     # Идентификатор ингредиента, устанавливается флаг write_only=True,
     # потому что это поле нужно только при создании нового объекта Amount,
     # и не должно включаться в представление при выводе (сериализации).
-    id = serializers.PrimaryKeyRelatedField(write_only=True)
+    id = serializers.IntegerField(write_only=True)
     # Указание количества ингредиента в рецепте
-    amount = serializers.PrimaryKeyRelatedField(write_only=True)
+    amount = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Amount

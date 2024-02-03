@@ -88,7 +88,7 @@ class Recipe(models.Model):
                 message='Время приготовления не может быть менее 1 минуты.'
             )
         ],
-        verbose_name='Время приготовления')
+        verbose_name='Время приготовления в минутах')
     # Поле автоматически заполняется датой и временем создания рецепта.
     pub_date = models.DateTimeField(
         auto_now_add=True,

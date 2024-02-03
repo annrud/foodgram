@@ -19,14 +19,14 @@ authorization = [
     path(
         'auth/token/login/',
         views.TokenCreateView.as_view(),
-        name='get_jwt_token'
+        name='get_auth_token'
     ),
     # Обрабатывает запросы на удаление (завершение) токена доступа
     # при выходе пользователя из системы
     path(
         'auth/token/logout/',
         views.TokenDestroyView.as_view(),
-        name='delete_jwt_token'
+        name='delete_auth_token'
     )
 ]
 

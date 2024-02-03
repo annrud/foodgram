@@ -6,7 +6,7 @@ urlpatterns = [
     # Этот путь связывает URL-адрес, оканчивающийся на "admin/",
     # с функциональностью административной панели Django.
     # Предоставляет доступ к администрированию приложения
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
     # Этот путь ассоциирует URL-адрес "redoc/" с классом TemplateView,
     # который используется для отображения статичных HTML-шаблонов
     # При обращении к "redoc/", будет отображаться HTML-шаблон из файла "redoc.html"
@@ -30,3 +30,4 @@ urlpatterns = [
     path('api/', include('ingredients.urls')),
     path('api/', include('recipes.urls')),
 ]
+

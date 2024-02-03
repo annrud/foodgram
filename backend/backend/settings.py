@@ -36,11 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'djoser',
-    'sorl.thumbnail',
     'django_filters',
     'ingredients.apps.IngredientsConfig',
     'recipes.apps.RecipesConfig',
+    'sorl.thumbnail',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -72,7 +72,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'sorl.thumbnail.context_processors.thumbnail',
             ],
         },
     },
@@ -134,7 +133,7 @@ REST_FRAMEWORK = {
     # Классы аутентификации по умолчанию для всех представлений DRF,
     # установлена аутентификация на основе токенов
     'DEFAULT_AUTHENTICATION_CLASSES': [
-         'rest_framework_simplejwt.authentication.JWTAuthentication',
+         'rest_framework.authentication.TokenAuthentication',
     ],
     # Этот параметр определяет имя ключа,
     # который будет использоваться для ошибок валидации полей.
@@ -159,30 +158,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Модель, используемая для представления пользователя
 AUTH_USER_MODEL = 'users.User'
 
-# Настройка библиотеки Django REST framework Simple JWT (JSON Web Tokens)
-# для создания и обработки JWT-токенов
-SIMPLE_JWT = {
-    # Этот параметр определяет срок действия (время жизни)
-    # выдаваемого доступного токена (access token).
-    # В данном случае, установлено значение timedelta(days=1),
-    # что означает, что каждый выданный access token будет
-    # действителен в течение 1 дня. После истечения этого срока,
-    # клиенту потребуется получить новый токен для доступа к защищенным ресурсам.
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    # Этот параметр определяет допустимые способы аутентификации
-    # в заголовке HTTP запроса. В данном случае,
-    # установлено значение ('Token',), что указывает
-    # на использование заголовка с типом 'Token'
-    # для передачи access token. Это означает,
-    # что клиент должен включать токен в заголовке
-    # запроса с указанием типа 'Token'.
-    'AUTH_HEADER_TYPES': ('Token',),
-}
-
 DJOSER = {
     'SERIALIZERS': {
         # Кастомный сериализатор, используемый для представления данных о текущем пользователе
-        'current_user': 'foodgram.apps.users.serializers.UserSerializer',
+        'current_user': 'users.serializers.UserSerializer',
         # Кастомный сериализатор для установки нового пароля пользователем
         'set_password': 'djoser.serializers.SetPasswordSerializer',
     },
@@ -194,4 +173,3 @@ DJOSER = {
     # Пользователи не скрываются, и их можно просматривать через API
     'HIDE_USERS': False,
 }
-

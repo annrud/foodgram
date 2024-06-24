@@ -24,27 +24,17 @@ class TagViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
-    # Устанавливаем сериализатор
     serializer_class = TagSerializer
-    # Объекты из базы данных для обработки этим представлением
     queryset = Tag.objects.all()
-    # Для представления не используется пагинация
     pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    # Класс разрешений - доступ только автору рецепта
-    # на операции записи и на чтение всем остальным пользователям
     permission_classes = (AuthorOrReadOnly,)
-    # Набор объектов, для выполнения операций CRUD
     queryset = Recipe.objects.all()
-    # Настройка фильтрации
     filter_backends = (DjangoFilterBackend,)
-    # Определяем набор фильтров, который будет применен к queryset
     filterset_class = RecipeFilter
-    # Устанавливаем сериализатор
     serializer_class = RecipeReadSerializer
-    # Устанавливаем класс пагинации
     pagination_class = CustomPagination
 
     def get_serializer_class(self):
@@ -53,12 +43,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeChangeSerializer
         return self.serializer_class
 
-    # Декоратор добавляет новое действие к представлению.
-    # В данном случае, это действие предназначено для обработки
-    # HTTP GET и DELETE запросов.
-    # detail=True указывает, что это действие применяется
-    # к конкретному объекту, а не к коллекции
-    #
     @action(
         detail=True, methods=['get', 'delete'],
         serializer_class=RecipeSerializer,
@@ -67,15 +51,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         """Обработка эндпоинта '/shopping_cart'
         управления списком покупок пользователя."""
-        # Получение текущего пользователя
         user = self.request.user
-        # Получение объекта рецепта
         recipe = self.get_object()
-        # Создание экземпляра сериализатора для рецепта
         serializer = self.get_serializer(recipe)
-        # Создание экземпляра сериализатора
-        # управления списком покупок
-        # для дальнейшей валидации данных
         purchase_serializer = PurchaseSerializer(
             context={
                 'request': request
@@ -85,14 +63,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe': recipe.id
             }
         )
-        # Проверка валидности данных
         purchase_serializer.is_valid(raise_exception=True)
         if request.method == 'GET':
-            # Добавление рецепта в список покупок
             Purchase.objects.create(user=user, recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            # Удаление рецепта из списка покупок
             purchase = get_object_or_404(Purchase, user=user, recipe=recipe)
             purchase.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -119,17 +94,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         favorite_serializer.is_valid(raise_exception=True)
         if request.method == 'GET':
-            # Добавление рецепта в избранное
             Favorite.objects.create(user=user, recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            # Удаление рецепта из избранного
             favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # Определяет дополнительное действия для представления,
-    # применяется не конкретному объекту, а к списку
     @action(
         detail=False, methods=['get'],
         permission_classes=(IsAuthenticated,)
@@ -141,8 +112,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         recipes = Recipe.objects.filter(purchases__user=user)
-        # Получение названий, единиц измерения и количества
-        # ингредиентов из рецептов
         ingredients = recipes.values(
             'ingredients__name',
             'ingredients__measurement_unit__name'
@@ -150,7 +119,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredients_total=Sum('amount_ingredients__amount')
         )
         response = ''
-        # Формирование списка ингредиентов
         for item in ingredients:
             response += (
                 f'{item.get("ingredients__name")} - '

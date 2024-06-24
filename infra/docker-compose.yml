@@ -1,58 +1,46 @@
-version: '3.8' # Версия Docker Compose
-# Именованные тома для хранения данных
+version: '3.8'
+
 volumes:
   postgres_data:
   static_value:
   media_value:
-# Контейнеры
+
 services:
   db:
-    # Служба использует образ postgres:12.4 - версия 12.4 СУБД PostgreSQL
     image: postgres:12.4
-    # Связь с томом postgres_data на хосте с базой данных в контейнере,
-    # для сохранения данные базы данных между перезапусками
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    # через env_file указан путь к файлу .env для настройки окружения базы данных
     env_file:
       - ../backend/backend/.env
     ports:
       - "15432:5432"
-  # Служба внешнего интерфейса (клиентская часть) создается с использованием
-  # файла Dockerfile, расположенного в каталоге ../frontend
+
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    # Сопоставление каталога ../frontend/ на хост-компьютере
-    # с каталогом /app/result_build/ в контейнере
     volumes:
       - ../frontend/:/app/result_build/
-    # Запуск контейнера после запуска контейнера backend
     depends_on:
       - backend
-  # Служба backend (серверная часть)
+
   backend:
     build:
-      # Контекст для сборки находится в папке выше текущей
       context: ../
       dockerfile: infra/Dockerfile
     depends_on:
       - db
     env_file:
       - ../backend/backend/.env
-    # Создает связи между файловой системой хоста и контейнера
     volumes:
       - ../backend:/code
       - static_value:/code/static/
       - media_value:/code/media/
-  # Служба nginx (веб-сервер) использует готовый образ nginx:1.25.1 из Docker Hub
+
   nginx:
     image: nginx:1.25.1-alpine
-    # Проброс порта 80 хоста на 80 порт контейнера (HOST:CONTAINER)
     ports:
       - "80:80"
-    # Cвязи между файловой системой хоста и контейнера.
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
